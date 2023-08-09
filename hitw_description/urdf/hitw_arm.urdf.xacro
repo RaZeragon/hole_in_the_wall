@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+  <xacro:macro name="hitw_arm" params="parent prefix *origin">
+
+    <joint name="${prefix}base_joint" type="fixed">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent}"/>
+      <child link="${prefix}base_link" />
+    </joint>
+
+    <link name="${prefix}base_link">
+      <visual>
+        <origin xyz="0 0 0.05"/>
+        <geometry>
+          <cylinder radius="0.25" length="0.1"/>
+        </geometry>
+        <material name="black"/>
+      </visual>
+    </link>
+
+    <link name="${prefix}arm_link_1">
+      <visual>
+        <origin xyz="0 0 0.25"/>
+        <geometry>
+          <box size="0.1 0.1 0.5"/>
+        </geometry>
+        <material name="white"/>
+      </visual>
+    </link>
+
+    <link name="${prefix}arm_link_2">
+      <visual>
+        <origin xyz="0 0 0.25"/>
+        <geometry>
+          <box size="0.1 0.1 0.5"/>
+        </geometry>
+        <material name="blue"/>
+      </visual>
+    </link>
+
+    <joint name="${prefix}arm_joint_1" type="revolute">
+      <axis xyz="0 1 0"/>
+      <limit effort="1000.0" lower="-1.5708" upper="1.5708" velocity="0.5"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <parent link="${prefix}base_link"/>
+      <child link="${prefix}arm_link_1"/>
+    </joint>
+
+    <joint name="${prefix}arm_joint_2" type="revolute">
+      <axis xyz="0 1 0"/>
+      <limit effort="1000.0" lower="-1.5708" upper="1.5708" velocity="0.5"/>
+      <origin rpy="0 0 0" xyz="0 0 0.5"/>
+      <parent link="${prefix}arm_link_1"/>
+      <child link="${prefix}arm_link_2"/>
+    </joint>
+
+  </xacro:macro>
+
+</robot>
