@@ -1,13 +1,8 @@
-# Author: Addison Sears-Collins
-# Date: September 14, 2021
-# Description: Launch a two-wheeled robot URDF file using Rviz.
-# https://automaticaddison.com
- 
 import os
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition, UnlessCondition
-from launch.substitutions import Command, LaunchConfiguration
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
  
@@ -16,7 +11,7 @@ def generate_launch_description():
     # Setting default paths
     pkg_hitw_description = get_package_share_directory('hitw_description')
     default_rviz_config_path = os.path.join(pkg_hitw_description, 'rviz/urdf_config.rviz')
-    default_urdf_model_path = os.path.join(pkg_hitw_description, 'urdf/arm.urdf')
+    default_urdf_model_path = os.path.join(pkg_hitw_description, 'urdf/hitw_arm_macro.urdf.xacro')
     
     # Launch configuration variables specific to simulation
     gui = LaunchConfiguration('gui')
@@ -25,71 +20,115 @@ def generate_launch_description():
     use_robot_state_pub = LaunchConfiguration('use_robot_state_pub')
     use_rviz = LaunchConfiguration('use_rviz')
     use_sim_time = LaunchConfiguration('use_sim_time')
+    prefix = LaunchConfiguration('prefix')
     
     # Declare the launch arguments  
     declare_urdf_model_path_cmd = DeclareLaunchArgument(
         name='urdf_model', 
         default_value=default_urdf_model_path, 
-        description='Absolute path to robot urdf file')
+        description='Absolute path to robot urdf file'
+    )
         
     declare_rviz_config_file_cmd = DeclareLaunchArgument(
         name='rviz_config_file',
         default_value=default_rviz_config_path,
-        description='Full path to the RVIZ config file to use')
+        description='Full path to the RVIZ config file to use'
+    )
         
     declare_use_joint_state_publisher_cmd = DeclareLaunchArgument(
         name='gui',
         default_value='True',
-        description='Flag to enable joint_state_publisher_gui')
+        description='Flag to enable joint_state_publisher_gui'
+    )
     
     declare_use_robot_state_pub_cmd = DeclareLaunchArgument(
         name='use_robot_state_pub',
         default_value='True',
-        description='Whether to start the robot state publisher')
+        description='Whether to start the robot state publisher'
+    )
     
     declare_use_rviz_cmd = DeclareLaunchArgument(
         name='use_rviz',
         default_value='True',
-        description='Whether to start RVIZ')
+        description='Whether to start RVIZ'
+    )
         
     declare_use_sim_time_cmd = DeclareLaunchArgument(
         name='use_sim_time',
         default_value='True',
-        description='Use simulation (Gazebo) clock if true')
+        description='Use simulation (Gazebo) clock if true'
+    )
+    
+    declare_prefix = DeclareLaunchArgument(
+            name="prefix",
+            default_value='""',
+            description="Prefix of the joint names, useful for \
+            multi-robot setup. If changed than also joint names in the controllers' configuration \
+            have to be updated.",
+    )
         
-    # Specify the actions
+
+    # Get URDF via xacro
+    # Creates a command that runs essentially 'xacro xacro_file prefix:='
+    robot_description_content = Command(
+        [
+            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            " ",
+            PathJoinSubstitution(
+                [pkg_hitw_description, "urdf", "hitw_arm_macro.urdf.xacro"]
+            ),
+            " ",
+            "prefix:=",
+            prefix,
+        ]
+    )
+
+    robot_controllers = PathJoinSubstitution(
+        [pkg_hitw_description, "config", "my_controllers.yaml"]
+    )
     
     # Publish the joint state values for the non-fixed joints in the URDF file.
-    start_joint_state_publisher_cmd = Node(
+    joint_state_publisher_node = Node(
         condition=UnlessCondition(gui),
         package='joint_state_publisher',
         executable='joint_state_publisher',
-        name='joint_state_publisher')
+        name='joint_state_publisher'
+    )
     
     # A GUI to manipulate the joint state values
-    start_joint_state_publisher_gui_node = Node(
+    joint_state_publisher_gui_node = Node(
         condition=IfCondition(gui),
         package='joint_state_publisher_gui',
         executable='joint_state_publisher_gui',
-        name='joint_state_publisher_gui')
+        name='joint_state_publisher_gui'
+    )
     
     # Subscribe to the joint states of the robot, and publish the 3D pose of each link.
-    start_robot_state_publisher_cmd = Node(
+    robot_state_publisher_node = Node(
         condition=IfCondition(use_robot_state_pub),
         package='robot_state_publisher',
         executable='robot_state_publisher',
         parameters=[{'use_sim_time': use_sim_time, 
-        'robot_description': Command(['xacro ', urdf_model])}],
-        arguments=[default_urdf_model_path])
+        'robot_description': robot_description_content}]
+    )
+
+    # Control Node
+    controller_node = Node(
+        package='controller_manager',
+        executable='ros2_control_node',
+        parameters=[{'robot_description': robot_description_content}, robot_controllers],
+        output='both',
+    )
     
     # Launch RViz
-    start_rviz_cmd = Node(
+    rviz_node = Node(
         condition=IfCondition(use_rviz),
         package='rviz2',
         executable='rviz2',
         name='rviz2',
         output='screen',
-        arguments=['-d', rviz_config_file])
+        arguments=['-d', rviz_config_file]
+    )
     
     # Create the launch description and populate
     ld = LaunchDescription()
@@ -101,11 +140,14 @@ def generate_launch_description():
     ld.add_action(declare_use_robot_state_pub_cmd)  
     ld.add_action(declare_use_rviz_cmd) 
     ld.add_action(declare_use_sim_time_cmd)
+    ld.add_action(declare_prefix)
     
     # Add any actions
-    ld.add_action(start_joint_state_publisher_cmd)
-    ld.add_action(start_joint_state_publisher_gui_node)
-    ld.add_action(start_robot_state_publisher_cmd)
-    ld.add_action(start_rviz_cmd)
+    ld.add_action(joint_state_publisher_node)
+    ld.add_action(joint_state_publisher_gui_node)
+    ld.add_action(robot_state_publisher_node)
+    ld.add_action(rviz_node)
+    ld.add_action(controller_node)
+
     
     return ld
