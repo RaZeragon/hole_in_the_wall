@@ -1,0 +1,9 @@
+<library path="ros2_control_hitw_arm">
+  <class name="ros2_control_hitw_arm/HITWBotSystemPositionOnlyHardware"
+         type="ros2_control_hitw_arm::HITWBotSystemPositionOnlyHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      ROS2 Control robot protocol for controlling a 2DOF HITW arm.
+    </description>
+  </class>
+</library>
