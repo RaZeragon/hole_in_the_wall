@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+  <xacro:macro name="hitw_camera" params="prefix">
+  
+    <link name="${prefix}rgb_camera_link">
+      <visual>
+        <origin xyz="1 0 1"/>
+        <geometry>
+          <box size="0.05 0.05 0.05"/>
+        </geometry>
+        <material name="red"/>
+      </visual>
+    </link>
+
+    <joint name="${prefix}rgb_camera_link_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="1.0 0.0 0.5"/>
+	  <parent link="${prefix}base_link"/>
+	  <child link="${prefix}rgb_camera_link"/>
+    </joint>
+
+    <link name="${prefix}rgb_camera_link_frame">
+    </link>
+
+    <joint name="${prefix}rgb_camera_frame_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <parent link="${prefix}rgb_camera_link"/>
+      <child link="${prefix}rgb_camera_link_frame"/>
+    </joint>
+
+    <gazebo reference="${prefix}rgb_camera_link_frame">
+      <sensor type="camera" name="rgb_cam">
+        <alwaysOn>true</alwaysOn>
+        <visualize>true</visualize>
+        <update_rate>10.0</update_rate>
+
+        <camera name="rgb_cam_SP">
+          <pose>0 0 0 0 0 0</pose>
+          <horizontal_fov>1.3962634</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.005</near>
+            <far>20.0</far>
+          </clip>
+        </camera>
+
+        <plugin filename="intel_realsense_r200_rgb_driver" name="camera_controller">
+          <cameraName>intel_realsense_r200_rgb</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+            <frameName>realsense_rgb_frame</frameName>
+          <hackBaseline>0.07</hackBaseline>
+          <distortionK1>0.0</distortionK1>
+          <distortionK2>0.0</distortionK2>
+          <distortionK3>0.0</distortionK3>
+          <distortionT1>0.0</distortionT1>
+          <distortionT2>0.0</distortionT2>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+
+</robot>

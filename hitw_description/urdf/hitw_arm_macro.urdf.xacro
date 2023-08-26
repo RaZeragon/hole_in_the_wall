@@ -13,12 +13,16 @@
 
   <xacro:include filename="materials.xacro" />
 
+  <xacro:include filename="camera.xacro" />
+
   <!-- Used for fixing robot -->
   <link name="world"/>
 
   <xacro:hitw_arm parent="world" prefix="$(arg prefix)">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:hitw_arm>
+
+  <xacro:hitw_camera prefix="$(arg prefix)" />
 
   <xacro:hitw_arm_ros2_control prefix="$(arg prefix)" />
 

@@ -1,25 +1,28 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 import os
+import sys
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.conditions import IfCondition, UnlessCondition
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
+from launch.conditions import IfCondition
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
-from ament_index_python.packages import get_package_share_directory
- 
+
+
 def generate_launch_description():
- 
+
     # Setting default paths
     pkg_hitw_description = get_package_share_directory('hitw_description')
     pkg_hitw_controllers = get_package_share_directory('hitw_controllers')
-    pkg_hitw_hardware = get_package_share_directory('hitw_hardware')
-    default_rviz_config_path = os.path.join(pkg_hitw_description, 'rviz/urdf_config.rviz')
+    pkg_hitw_gazebo = get_package_share_directory('hitw_gazebo')
     default_urdf_model_path = os.path.join(pkg_hitw_description, 'urdf/hitw_arm_macro.urdf.xacro')
-    
+
     # Launch configuration variables specific to simulation
     urdf_model = LaunchConfiguration('urdf_model')
-    rviz_config_file = LaunchConfiguration('rviz_config_file')
     use_robot_state_pub = LaunchConfiguration('use_robot_state_pub')
-    use_rviz = LaunchConfiguration('use_rviz')
     use_sim_time = LaunchConfiguration('use_sim_time')
     prefix = LaunchConfiguration('prefix')
     
@@ -29,23 +32,11 @@ def generate_launch_description():
         default_value=default_urdf_model_path, 
         description='Absolute path to robot urdf file'
     )
-        
-    declare_rviz_config_file_cmd = DeclareLaunchArgument(
-        name='rviz_config_file',
-        default_value=default_rviz_config_path,
-        description='Full path to the RVIZ config file to use'
-    )
     
     declare_use_robot_state_pub_cmd = DeclareLaunchArgument(
         name='use_robot_state_pub',
         default_value='True',
         description='Whether to start the robot state publisher'
-    )
-    
-    declare_use_rviz_cmd = DeclareLaunchArgument(
-        name='use_rviz',
-        default_value='True',
-        description='Whether to start RVIZ'
     )
         
     declare_use_sim_time_cmd = DeclareLaunchArgument(
@@ -60,6 +51,13 @@ def generate_launch_description():
             description="Prefix of the joint names, useful for \
             multi-robot setup. If changed than also joint names in the controllers' configuration \
             have to be updated.",
+    )
+
+    # Start World
+    start_world = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_hitw_gazebo, 'launch', 'start_world.launch.py')
+        )
     )
 
     # Get URDF via xacro
@@ -78,18 +76,30 @@ def generate_launch_description():
     )
 
     robot_description = {'robot_description': robot_description_content}
+    robot_params = {'robot_description': robot_description_content, 'use_sim_time': use_sim_time}
 
     # Loads the controllers.yaml file
     robot_controllers = PathJoinSubstitution(
         [pkg_hitw_controllers, "config", "my_controllers.yaml"]
     )
-    
+
     # Subscribe to the joint states of the robot, and publish the 3D pose of each link.
     robot_state_publisher_node = Node(
         condition=IfCondition(use_robot_state_pub),
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        parameters=[robot_description]
+        parameters=[robot_params]
+    )
+
+    # Spawn the robot
+    spawn_entity = Node(
+        package="gazebo_ros",
+        executable="spawn_entity.py",
+        arguments=["-topic", "robot_description", "-entity", "HITW_system_position",
+                    '-x', '0.0',
+                    '-y', '0.0',
+                    '-z', '0.0',],
+        output="screen",
     )
 
     # Control Node
@@ -113,34 +123,18 @@ def generate_launch_description():
         executable="spawner.py",
         arguments=["forward_position_controller", "--controller-manager", "/controller_manager"],
     )
-    
-    # Launch RViz
-    rviz_node = Node(
-        condition=IfCondition(use_rviz),
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        output='screen',
-        arguments=['-d', rviz_config_file]
-    )
-    
-    # Create the launch description and populate
-    ld = LaunchDescription()
-    
-    # Declare the launch options
-    ld.add_action(declare_urdf_model_path_cmd)
-    ld.add_action(declare_rviz_config_file_cmd)
-    ld.add_action(declare_use_robot_state_pub_cmd)  
-    ld.add_action(declare_use_rviz_cmd) 
-    ld.add_action(declare_use_sim_time_cmd)
-    ld.add_action(declare_prefix)
-    
-    # Add any actions
-    ld.add_action(robot_state_publisher_node)
-    ld.add_action(rviz_node)
-    ld.add_action(controller_node)
-    ld.add_action(joint_state_broadcaster_spawner)
-    ld.add_action(robot_controller_spawner)
 
-    
-    return ld
+    return LaunchDescription([
+        declare_urdf_model_path_cmd,
+        declare_use_robot_state_pub_cmd,
+        declare_use_sim_time_cmd,
+        declare_prefix,
+
+        start_world,
+
+        robot_state_publisher_node,
+        spawn_entity,
+        controller_node,
+        joint_state_broadcaster_spawner,
+        robot_controller_spawner,
+    ])
