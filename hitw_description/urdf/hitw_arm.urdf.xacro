@@ -19,7 +19,7 @@
       </visual>
     </link>
 
-    <link name="${prefix}arm_link_1">
+    <link name="${prefix}link1">
       <visual>
         <origin xyz="0 0 0.25"/>
         <geometry>
@@ -29,7 +29,7 @@
       </visual>
     </link>
 
-    <link name="${prefix}arm_link_2">
+    <link name="${prefix}link2">
       <visual>
         <origin xyz="0 0 0.25"/>
         <geometry>
@@ -39,20 +39,20 @@
       </visual>
     </link>
 
-    <joint name="${prefix}arm_joint_1" type="revolute">
+    <joint name="${prefix}joint1" type="revolute">
       <axis xyz="0 1 0"/>
       <limit effort="1000.0" lower="-1.5708" upper="1.5708" velocity="0.5"/>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <parent link="${prefix}base_link"/>
-      <child link="${prefix}arm_link_1"/>
+      <child link="${prefix}link1"/>
     </joint>
 
-    <joint name="${prefix}arm_joint_2" type="revolute">
+    <joint name="${prefix}joint2" type="revolute">
       <axis xyz="0 1 0"/>
       <limit effort="1000.0" lower="-1.5708" upper="1.5708" velocity="0.5"/>
       <origin rpy="0 0 0" xyz="0 0 0.5"/>
-      <parent link="${prefix}arm_link_1"/>
-      <child link="${prefix}arm_link_2"/>
+      <parent link="${prefix}link1"/>
+      <child link="${prefix}link2"/>
     </joint>
 
   </xacro:macro>

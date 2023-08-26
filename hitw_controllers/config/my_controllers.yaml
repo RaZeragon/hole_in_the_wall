@@ -1,7 +1,6 @@
 controller_manager:
   ros__parameters:
     update_rate: 30
-    use_sim_time: true
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -15,15 +14,15 @@ controller_manager:
 forward_position_controller:
   ros__parameters:
     joints:
-      - arm_joint_1
-      - arm_joint_1
+      - joint1
+      - joint2
     interface_name: position
 
 joint_trajectory_position_controller:
   ros__parameters:
     joints:
-      - arm_joint_1
-      - arm_joint_1
+      - joint1
+      - joint2
 
     command_interfaces:
       - position
@@ -31,6 +30,7 @@ joint_trajectory_position_controller:
     state_interfaces:
       - position
 
+    state_publish_rate: 200.0 # Defaults to 50
     action_monitor_rate: 20.0 # Defaults to 20
 
     allow_partial_joints_goal: false # Defaults to false

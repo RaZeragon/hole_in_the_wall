@@ -11,12 +11,12 @@
 #include "hardware_interface/types/hardware_interface_status_values.hpp"
 #include "rclcpp/macros.hpp"
 
-namespace ros2_control_hitw_arm
+namespace hitw_hardware
 {
     class HITWBotSystemPositionOnlyHardware : public hardware_interface::BaseInterface<hardware_interface::SystemInterface>
     {
         public:
-            RCLCPP_SHARED_PTR_DEFINITIONS(HITWBotSystemPositionOnlyHardware);
+            RCLCPP_SHARED_PTR_DEFINITIONS(HITWBotSystemPositionOnlyHardware)
 
             hardware_interface::return_type configure(const hardware_interface::HardwareInfo & info) override;
 

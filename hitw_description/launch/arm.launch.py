@@ -10,6 +10,8 @@ def generate_launch_description():
  
     # Setting default paths
     pkg_hitw_description = get_package_share_directory('hitw_description')
+    pkg_hitw_controllers = get_package_share_directory('hitw_controllers')
+    pkg_hitw_hardware = get_package_share_directory('hitw_hardware')
     default_rviz_config_path = os.path.join(pkg_hitw_description, 'rviz/urdf_config.rviz')
     default_urdf_model_path = os.path.join(pkg_hitw_description, 'urdf/hitw_arm_macro.urdf.xacro')
     
@@ -83,8 +85,11 @@ def generate_launch_description():
         ]
     )
 
+    robot_description = {'robot_description': robot_description_content}
+
+    # Loads the controllers.yaml file
     robot_controllers = PathJoinSubstitution(
-        [pkg_hitw_description, "config", "my_controllers.yaml"]
+        [pkg_hitw_controllers, "config", "my_controllers.yaml"]
     )
     
     # Publish the joint state values for the non-fixed joints in the URDF file.
@@ -108,16 +113,29 @@ def generate_launch_description():
         condition=IfCondition(use_robot_state_pub),
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        parameters=[{'use_sim_time': use_sim_time, 
-        'robot_description': robot_description_content}]
+        parameters=[robot_description]
     )
 
     # Control Node
     controller_node = Node(
         package='controller_manager',
         executable='ros2_control_node',
-        parameters=[{'robot_description': robot_description_content}, robot_controllers],
+        parameters=[robot_description, robot_controllers],
         output='both',
+    )
+
+    # Joint State Broadcaster
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner.py",
+        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+    )
+
+    # Robot Controller Spawner
+    robot_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner.py",
+        arguments=["forward_position_controller", "--controller-manager", "/controller_manager"],
     )
     
     # Launch RViz
@@ -143,11 +161,13 @@ def generate_launch_description():
     ld.add_action(declare_prefix)
     
     # Add any actions
-    ld.add_action(joint_state_publisher_node)
-    ld.add_action(joint_state_publisher_gui_node)
+    #ld.add_action(joint_state_publisher_node)
+    #ld.add_action(joint_state_publisher_gui_node)
     ld.add_action(robot_state_publisher_node)
     ld.add_action(rviz_node)
     ld.add_action(controller_node)
+    ld.add_action(joint_state_broadcaster_spawner)
+    ld.add_action(robot_controller_spawner)
 
     
     return ld

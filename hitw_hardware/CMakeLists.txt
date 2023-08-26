@@ -39,7 +39,7 @@ ament_target_dependencies(
   rclcpp
 )
 
-pluginlib_export_plugin_description_file(hardware_interface ros2_control_hitw_arm.xml)
+pluginlib_export_plugin_description_file(hardware_interface hitw_hardware.xml)
 
 # INSTALL
 install(
