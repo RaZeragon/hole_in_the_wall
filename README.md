@@ -2,15 +2,15 @@
 
 ## 1. Introduction
 
-&ensp;&ensp;&ensp;&ensp;This repository contains simulation models for a robotic arm that can play the game [Hole in the Wall](https://en.wikipedia.org/wiki/Hole_in_the_Wall_(American_game_show)). Currently a work in progress.
+This repository contains simulation models for a robotic arm that can play the game [Hole in the Wall](https://en.wikipedia.org/wiki/Hole_in_the_Wall_(American_game_show)). Currently a work in progress.
 
-&ensp;&ensp;&ensp;&ensp;The eventual goal is to create a system with the following characteristics:
+The eventual goal is to create a system with the following characteristics:
 - Able to take an image input with a clear 'hole' and determine if the robot arm has a configuration that would allow it to pass through
 - Create an algorithm that can intake the joint and link parameters (link length, joint type, joint amount etc.) to create a modular solution for any reasonable DoF arm (most likely for 1 DoF up to 7 DoF)
 - Control the arm to move into the calculated position in both RViz and Gazebo using a combination of ros2_control and moveit2
 - Control an IRL arm and camera with the same functionality
 
-&ensp;&ensp;&ensp;&ensp;The development and test environment is as follows:
+The development and test environment is as follows:
 - Ubuntu 20.04 + ROS Foxy
 
 ## 2. Update History
