@@ -1,31 +1,31 @@
 <?xml version="1.0"?>
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="hitw_arm_robot">
-  <xacro:arg name="prefix" default="" />
+  <xacro:arg name="prefix" default=""/>
 
   <!-- Import hitw_arm macro -->
-  <xacro:include filename="hitw_arm.urdf.xacro" />
+  <xacro:include filename="hitw_arm.urdf.xacro"/>
 
   <!-- Import ros2_control paramaters-->
-  <xacro:include filename="ros2_control.xacro" />
+  <xacro:include filename="ros2_control.xacro"/>
 
-  <xacro:include filename="transmissions.xacro" />
+  <xacro:include filename="transmissions.xacro"/>
 
-  <xacro:include filename="materials.xacro" />
+  <xacro:include filename="materials.xacro"/>
 
-  <xacro:include filename="camera.xacro" />
+  <xacro:include filename="camera.xacro"/>
 
   <!-- Used for fixing robot -->
   <link name="world"/>
 
   <xacro:hitw_arm parent="world" prefix="$(arg prefix)">
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:hitw_arm>
 
-  <xacro:hitw_camera prefix="$(arg prefix)" />
+  <xacro:hitw_camera prefix="$(arg prefix)"/>
 
-  <xacro:hitw_arm_ros2_control prefix="$(arg prefix)" />
+  <xacro:hitw_arm_ros2_control prefix="$(arg prefix)"/>
 
-  <xacro:hitw_arm_transmissions prefix="$(arg prefix)" />
+  <xacro:hitw_arm_transmissions prefix="$(arg prefix)"/>
 
 </robot>

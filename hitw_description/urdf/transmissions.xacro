@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" >
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:macro name="hitw_arm_transmissions" params="prefix">
 
@@ -16,7 +16,7 @@
 
     <transmission name="${prefix}transmission2">
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="${prefix}joint_2">
+      <joint name="${prefix}joint2">
         <hardwareInterface>EffortJointInterface</hardwareInterface>
       </joint>
       <actuator name="${prefix}motor2">

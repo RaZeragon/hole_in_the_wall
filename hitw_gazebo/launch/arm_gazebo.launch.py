@@ -18,7 +18,9 @@ def generate_launch_description():
     pkg_hitw_description = get_package_share_directory('hitw_description')
     pkg_hitw_controllers = get_package_share_directory('hitw_controllers')
     pkg_hitw_gazebo = get_package_share_directory('hitw_gazebo')
+    pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
     default_urdf_model_path = os.path.join(pkg_hitw_description, 'urdf/hitw_arm_macro.urdf.xacro')
+    world_path = os.path.join(pkg_hitw_gazebo, '/worlds/empty.world')
 
     # Launch configuration variables specific to simulation
     urdf_model = LaunchConfiguration('urdf_model')
@@ -54,9 +56,36 @@ def generate_launch_description():
     )
 
     # Start World
-    start_world = IncludeLaunchDescription(
+    # start_world = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         os.path.join(pkg_hitw_gazebo, 'launch', 'start_world.launch.py')
+    #     )
+    # )
+
+    empty_world = os.path.join(pkg_hitw_gazebo, 'worlds', 'empty.world')
+    gazebo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_hitw_gazebo, 'launch', 'start_world.launch.py')
+            os.path.join(pkg_gazebo_ros, 'launch', 'gazebo.launch.py')),
+            launch_arguments={
+                'world': empty_world,
+                'server_required': 'true',
+                'gui_required': 'true',
+            }.items(),
+    )
+
+    # Start Gazebo server
+    start_gazebo_server_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_gazebo_ros, 'launch', 'gzserver.launch.py')),
+            launch_arguments={
+                'world': empty_world
+            }.items(),
+    )
+
+    # Start Gazebo client    
+    start_gazebo_client_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_gazebo_ros, 'launch', 'gzclient.launch.py')
         )
     )
 
@@ -95,7 +124,8 @@ def generate_launch_description():
     spawn_entity = Node(
         package="gazebo_ros",
         executable="spawn_entity.py",
-        arguments=["-topic", "robot_description", "-entity", "HITW_system_position",
+        arguments=["-topic", "robot_description", 
+                   "-entity", "HITW_system_position",
                     '-x', '0.0',
                     '-y', '0.0',
                     '-z', '0.0',],
@@ -130,7 +160,9 @@ def generate_launch_description():
         declare_use_sim_time_cmd,
         declare_prefix,
 
-        start_world,
+        # gazebo_launch,
+        start_gazebo_server_cmd,
+        start_gazebo_client_cmd,
 
         robot_state_publisher_node,
         spawn_entity,
