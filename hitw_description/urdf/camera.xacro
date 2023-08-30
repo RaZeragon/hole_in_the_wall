@@ -52,11 +52,11 @@
           </clip>
         </camera>
 
-        <plugin filename="intel_realsense_r200_rgb_driver" name="camera_controller">
-          <cameraName>intel_realsense_r200_rgb</cameraName>
+        <plugin filename="libgazebo_ros_camera.so" name="camera_controller">
+          <cameraName>hitw_camera/camera</cameraName>
           <imageTopicName>image_raw</imageTopicName>
-            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-            <frameName>realsense_rgb_frame</frameName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>rgb_camera_link_frame</frameName>
           <hackBaseline>0.07</hackBaseline>
           <distortionK1>0.0</distortionK1>
           <distortionK2>0.0</distortionK2>

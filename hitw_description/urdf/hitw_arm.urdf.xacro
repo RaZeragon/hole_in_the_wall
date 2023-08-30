@@ -22,7 +22,7 @@
         </geometry>
       </collision>
 
-      <xacro:cylinder_inertia m="0.5" r="0.25" h="0.1"/> 
+      <xacro:cylinder_inertia m="10.0" r="0.25" h="0.1"/> 
     </link>
 
     <gazebo reference="${prefix}base_link">
