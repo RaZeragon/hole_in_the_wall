@@ -5,7 +5,7 @@
   
     <link name="${prefix}rgb_camera_link">
       <visual>
-        <origin xyz="1 0 1"/>
+        <origin xyz="0 0 0"/>
         <geometry>
           <box size="0.05 0.05 0.05"/>
         </geometry>
@@ -18,7 +18,7 @@
     </gazebo>
 
     <joint name="${prefix}rgb_camera_link_joint" type="fixed">
-      <origin rpy="0 0 0" xyz="1.0 0.0 0.5"/>
+      <origin rpy="0 0 ${pi/2}" xyz="0.0 1.0 0.5"/>
 	  <parent link="${prefix}base_link"/>
 	  <child link="${prefix}rgb_camera_link"/>
     </joint>
