@@ -13,6 +13,10 @@
       </visual>
     </link>
 
+    <gazebo reference="${prefix}rgb_camera_link">
+      <material>Gazebo/Black</material>
+    </gazebo>
+
     <joint name="${prefix}rgb_camera_link_joint" type="fixed">
       <origin rpy="0 0 0" xyz="1.0 0.0 0.5"/>
 	  <parent link="${prefix}base_link"/>

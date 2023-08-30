@@ -16,6 +16,9 @@
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>forward_command_controller</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>gazebo_ros2_control</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>hardware_interface</exec_depend>
   <exec_depend>rviz</exec_depend>
   <exec_depend>rviz2</exec_depend>
   <exec_depend>xacro</exec_depend>

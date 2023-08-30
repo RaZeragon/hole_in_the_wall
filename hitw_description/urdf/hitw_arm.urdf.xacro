@@ -1,16 +1,9 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="hitw_arm" params="parent prefix *origin">
+  <xacro:macro name="hitw_arm_core" params="parent prefix *origin">
 
     <xacro:include filename="inertia_macro.xacro"/>
-
-    <!--********************************* BASE JOINT *********************************-->
-    <joint name="${prefix}base_joint" type="fixed">
-      <xacro:insert_block name="origin"/>
-      <parent link="${parent}"/>
-      <child link="${prefix}base_link"/>
-    </joint>
 
     <!--********************************* BASE LINK *********************************-->
     <link name="${prefix}base_link">
@@ -36,6 +29,13 @@
       <material>Gazebo/Black</material>
     </gazebo>
 
+    <!--********************************* BASE JOINT *********************************-->
+    <joint name="${prefix}base_joint" type="fixed">
+      <xacro:insert_block name="origin"/>
+      <parent link="${parent}"/>
+      <child link="${prefix}base_link"/>
+    </joint>
+
     <!--********************************* LINK 1 *********************************-->
     <link name="${prefix}link1">
       <visual>
@@ -58,10 +58,6 @@
 
     <gazebo reference="${prefix}link1">
       <material>Gazebo/White</material>
-      <kp>100000.0</kp>
-      <kd>1.0</kd>
-      <mu1>10.0</mu1>
-      <mu2>10.0</mu2>
     </gazebo>
 
     <!--********************************* LINK 2 *********************************-->
@@ -86,10 +82,6 @@
 
     <gazebo reference="${prefix}link2">
       <material>Gazebo/Blue</material>
-      <kp>100000.0</kp>
-      <kd>1.0</kd>
-      <mu1>10.0</mu1>
-      <mu2>10.0</mu2>
     </gazebo>
 
     <!--********************************* JOINT 1 *********************************-->

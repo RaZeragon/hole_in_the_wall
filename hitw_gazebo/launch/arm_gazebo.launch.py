@@ -19,7 +19,7 @@ def generate_launch_description():
     pkg_hitw_controllers = get_package_share_directory('hitw_controllers')
     pkg_hitw_gazebo = get_package_share_directory('hitw_gazebo')
     pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
-    default_urdf_model_path = os.path.join(pkg_hitw_description, 'urdf/hitw_arm_macro.urdf.xacro')
+    default_urdf_model_path = os.path.join(pkg_hitw_description, 'urdf/test.xacro')
     world_path = os.path.join(pkg_hitw_gazebo, '/worlds/empty.world')
 
     # Launch configuration variables specific to simulation
@@ -73,22 +73,6 @@ def generate_launch_description():
             }.items(),
     )
 
-    # Start Gazebo server
-    start_gazebo_server_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(pkg_gazebo_ros, 'launch', 'gzserver.launch.py')),
-            launch_arguments={
-                'world': empty_world
-            }.items(),
-    )
-
-    # Start Gazebo client    
-    start_gazebo_client_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(pkg_gazebo_ros, 'launch', 'gzclient.launch.py')
-        )
-    )
-
     # Get URDF via xacro
     # Creates a command that runs essentially 'xacro xacro_file prefix:='
     robot_description_content = Command(
@@ -101,23 +85,19 @@ def generate_launch_description():
             " ",
             "prefix:=",
             prefix,
+            " ",
+            "use_gazebo:=true",
         ]
     )
 
     robot_description = {'robot_description': robot_description_content}
-    robot_params = {'robot_description': robot_description_content, 'use_sim_time': use_sim_time}
-
-    # Loads the controllers.yaml file
-    robot_controllers = PathJoinSubstitution(
-        [pkg_hitw_controllers, "config", "my_controllers.yaml"]
-    )
 
     # Subscribe to the joint states of the robot, and publish the 3D pose of each link.
     robot_state_publisher_node = Node(
         condition=IfCondition(use_robot_state_pub),
         package='robot_state_publisher',
         executable='robot_state_publisher',
-        parameters=[robot_params]
+        parameters=[robot_description]
     )
 
     # Spawn the robot
@@ -132,20 +112,18 @@ def generate_launch_description():
         output="screen",
     )
 
-    # Control Node
-    controller_node = Node(
-        package='controller_manager',
-        executable='ros2_control_node',
-        parameters=[robot_description, robot_controllers],
-        output='both',
-    )
-
     # Joint State Broadcaster
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner.py",
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
+
+    # joint_trajectory_broadcaster_spawner = Node(
+    #     package="controller_manager",
+    #     executable="spawner.py",
+    #     arguments=["joint_trajectory_controller", "--controller-manager", "/controller_manager"]
+    # )
 
     # Robot Controller Spawner
     robot_controller_spawner = Node(
@@ -160,13 +138,11 @@ def generate_launch_description():
         declare_use_sim_time_cmd,
         declare_prefix,
 
-        # gazebo_launch,
-        start_gazebo_server_cmd,
-        start_gazebo_client_cmd,
+        gazebo_launch,
 
         robot_state_publisher_node,
         spawn_entity,
-        controller_node,
         joint_state_broadcaster_spawner,
+        # joint_trajectory_broadcaster_spawner,
         robot_controller_spawner,
     ])

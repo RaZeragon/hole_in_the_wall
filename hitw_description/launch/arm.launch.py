@@ -20,6 +20,7 @@ def generate_launch_description():
     rviz_config_file = LaunchConfiguration('rviz_config_file')
     use_robot_state_pub = LaunchConfiguration('use_robot_state_pub')
     use_rviz = LaunchConfiguration('use_rviz')
+    use_gazebo = LaunchConfiguration('use_gazebo')
     use_sim_time = LaunchConfiguration('use_sim_time')
     prefix = LaunchConfiguration('prefix')
     
@@ -46,6 +47,12 @@ def generate_launch_description():
         name='use_rviz',
         default_value='True',
         description='Whether to start RVIZ'
+    )
+
+    declare_use_gazebo_cmd = DeclareLaunchArgument(
+        name='use_gazebo',
+        default_value='false',
+        description='Whether to start Gazebo'
     )
         
     declare_use_sim_time_cmd = DeclareLaunchArgument(
@@ -74,6 +81,9 @@ def generate_launch_description():
             " ",
             "prefix:=",
             prefix,
+            " ",
+            "use_gazebo:=",
+            use_gazebo,
         ]
     )
 
@@ -132,6 +142,7 @@ def generate_launch_description():
     ld.add_action(declare_rviz_config_file_cmd)
     ld.add_action(declare_use_robot_state_pub_cmd)  
     ld.add_action(declare_use_rviz_cmd) 
+    ld.add_action(declare_use_gazebo_cmd)
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_prefix)
     
