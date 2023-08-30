@@ -80,6 +80,12 @@ The development and test environment is as follows:
 - ### 4.3 hitw_hardware
     This package contains the plugin for controlling the arm.
 
+- ### 4.4 hitw_algorithm
+    This package contains the code for analyzing the hole and determining if the current arm can fit inside. 
+
+- ### 4.5 hitw_gazebo
+    This package contains the Gazebo launch files.
+
 ## 5. References
 - [ros2_control_demos](https://github.com/ros-controls/ros2_control_demos/tree/foxy)
 - [ROS Control](https://www.rosroboticslearning.com/ros-control)
