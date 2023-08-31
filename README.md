@@ -16,36 +16,40 @@ The development and test environment is as follows:
 ## 2. Update History
 - (2023-08-26)
     - Updated README.md
+- (2023-08-30)
+    - Functional Gazebo model
 
 ## 3. Installation
 - ### 3.1 Install [ROS2 Foxy](https://docs.ros.org/en/ros2_documentation/foxy/Installation.html) 
 
-- ### 3.2 Install [ros2_control](https://control.ros.org/master/index.html)  
+- ### 3.2 Install [Gazebo](https://classic.gazebosim.org/tutorials?tut=install_ubuntu)  
+
+- ### 3.3 Install [ros2_control](https://control.ros.org/master/index.html)  
     ```bash
     $ sudo apt install ros-foxy-ros2-control
     $ sudo apt install ros-foxy-ros2-controllers
     ```
 
-- ### 3.3 Create a workspace
+- ### 3.4 Create a workspace
     ```bash
     # Skip this step if you already have a target workspace
     $ cd ~
     $ mkdir -p dev_ws/src
     ```
 
-- ### 3.4 Obtain source code of "hole_in_the_wall" repository
+- ### 3.5 Obtain source code of "hole_in_the_wall" repository
     ```bash
     $ cd ~/dev_ws/src
     $ git clone https://github.com/RaZeragon/hole_in_the_wall.git
     ```
 
-- ### 3.5 Update "hole_in_the_wall" repository 
+- ### 3.6 Update "hole_in_the_wall" repository 
     ```bash
     $ cd ~/dev_ws/src/hole_in_the_wall
     $ git pull
     ```
 
-- ### 3.6 Install dependencies
+- ### 3.7 Install dependencies
     ```bash
     # Remember to source ros2 environment settings first
     $ source /opt/ros/foxy/setup.bash
@@ -54,7 +58,7 @@ The development and test environment is as follows:
     $ rosdep install --from-paths . --ignore-src --rosdistro $ROS_DISTRO -y
     ```
 
-- ### 3.7 Build hole_in_the_wall
+- ### 3.8 Build hole_in_the_wall
     ```bash
     # Remember to source ros2 environment settings first
     $ source /opt/ros/foxy/setup.bash
@@ -71,7 +75,12 @@ The development and test environment is as follows:
     This package contains robot description files and 3D models of the HITW robot. Models can be displayed in RViz by the following launch file:
     ```bash
     $ cd ~/dev_ws/
+    
+    # Launch a view-only model of the arm
     $ ros2 launch hitw_description view_arm.launch.py
+
+    # Launch the arm with joint-state GUI
+    $ ros2 launch hitw_description arm.launch.py
     ```
 
 - ### 4.2 hitw_controllers 
@@ -85,6 +94,10 @@ The development and test environment is as follows:
 
 - ### 4.5 hitw_gazebo
     This package contains the Gazebo launch files.
+    ```bash
+    $ cd ~/dev_ws/
+    $ ros2 launch hitw_gazebo arm_gazebo.launch.py
+    ```
 
 ## 5. References
 - [ros2_control_demos](https://github.com/ros-controls/ros2_control_demos/tree/foxy)
