@@ -83,12 +83,36 @@ def circleBres(circle_center_x, circle_center_y, radius):
 
     return(orderOctants(octants))
 
+def createIntersectionPairs(intersection_list):
+    # Creates a list of intersection pairs that describe how the circle interacts
+    # with the hole outline
+    intersection_pairs = []
+
+    # Checks if there is either no intersections or one grouping
+    if len(intersection_list) == 1:
+        intersection_pairs = None
+        return intersection_pairs
+    
+    # Takes the two closest points from the two groupings
+    if len(intersection_list) == 2:
+        intersection_pairs.append([intersection_list[0][-1], intersection_list[1][0]])
+        return intersection_pairs
+
+    for index in range(len(intersection_list) - 1):
+        intersection_pairs.append([intersection_list[index][-1], intersection_list[index + 1][0]])
+
+    intersection_pairs.append([intersection_list[-1][-1], intersection_list[0][0]])
+    
+    return intersection_pairs
+
 def findIntersections(circle_coordinates, threshold_image):
     # Iterates through the circle coordinates and tests if they're
     # within the image. If they are, then check if that pixel is
     # bright which means it is an edge of the hole and add that coordinate
-    # to a list of intersections
-    intersection_list = []
+    # to a grouping of intersections. A grouping of intersections is just
+    # a chain of bright pixels 
+    intersection_list = [[]]
+    chain = False
 
     for coordinate in circle_coordinates:
         try:
@@ -97,30 +121,46 @@ def findIntersections(circle_coordinates, threshold_image):
             pass
         else:
             if threshold_image[coordinate[1], coordinate[0]] > 50:
-                intersection_list.append(coordinate)
+                intersection_list[-1].append(coordinate)
+                chain = True
+            else:
+                if chain:
+                    intersection_list.append([])
+                chain = False
 
-    return intersection_list
+    # If last grouping is empty, delete it
+    if not(intersection_list[-1]):
+        del intersection_list[-1]
 
-def createAnglePairs(intersection_list):
-    pass
+    intersection_pairs = createIntersectionPairs(intersection_list)
+
+    return intersection_pairs
+
+def createAngles(intersection_pairs, grayscale_image):
+    # Creates potential angles for the joint
+    # Need to find a way to check if the joint path is outside or inside
+    # the hole
+    angle_pairs = []
+
+    for intersection_pair in intersection_pairs:
+        x_coord_avg = int((intersection_pair[0][0] + intersection_pair[1][0]) / 2)
+        y_coord_avg = int((intersection_pair[0][1] + intersection_pair[1][1]) / 2)
+
+        if grayscale_image[y_coord_avg, x_coord_avg] > 50:
+            continue
+
+        
+
+        math.atan2()
+
+    return angle_pairs
+
 
 test_coordinates = circleBres(circle_center_x, circle_center_y, link1_length_pixels)
-print(findIntersections(test_coordinates, thresh))
-
-# # Next part assumes there were only two intersections
-# # Need to tell which pixels are grouped together and choose the edge pixels of those groupings
-# # Need to add error checking for edge cases
-# previous_x_coord = intersection_list[0][0]
-# starting_coordinate = []
-# ending_coordinate = []
-
-# for coordinate_id in range(1, len(intersection_list)):
-#     if (intersection_list[coordinate_id][0] > (previous_x_coord + 1)):
-#         ending_coordinate = intersection_list[coordinate_id]
-#         starting_coordinate = intersection_list[coordinate_id - 1]
-#         break
-
-#     previous_x_coord = intersection_list[coordinate_id][0]
+intersections = findIntersections(test_coordinates, thresh)
+print(intersections)
+angles = createAngles(intersections, img_gray)
+print(angles)
 
 # # Could change to just averaging the two coordinate points
 # # Could also do similar triangles?
@@ -135,9 +175,5 @@ print(findIntersections(test_coordinates, thresh))
 
 # # print(joint_center_x, joint_center_y)
 # # combined_images[int(joint_center_y), int(joint_center_x)] = 255
-
-
-cv2.imshow('Second combined square', combined_images)
-cv2.waitKey(0)
 
 cv2.destroyAllWindows()
