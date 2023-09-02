@@ -95,17 +95,17 @@ def createIntersectionPairs(intersection_list):
     
     # Takes the two closest points from the two groupings
     if len(intersection_list) == 2:
-        intersection_pairs.append([intersection_list[0][-1], intersection_list[1][0]])
+        intersection_pairs.append([[intersection_list[0][-2], intersection_list[1][0]], intersection_list[0][-1]])
         return intersection_pairs
 
     for index in range(len(intersection_list) - 1):
-        intersection_pairs.append([intersection_list[index][-1], intersection_list[index + 1][0]])
+        intersection_pairs.append([[intersection_list[index][-2], intersection_list[index + 1][0]], intersection_list[index][-1]])
 
-    intersection_pairs.append([intersection_list[-1][-1], intersection_list[0][0]])
+    intersection_pairs.append([[intersection_list[-1][-2], intersection_list[0][0]], intersection_list[-1][-1]])
     
     return intersection_pairs
 
-def findIntersections(circle_coordinates, threshold_image):
+def findIntersections(circle_coordinates, threshold_image, grayscale_image):
     # Iterates through the circle coordinates and tests if they're
     # within the image. If they are, then check if that pixel is
     # bright which means it is an edge of the hole and add that coordinate
@@ -118,62 +118,89 @@ def findIntersections(circle_coordinates, threshold_image):
         try:
             threshold_image[coordinate[1], coordinate[0]]
         except:
+            # Probably add code to check for intersections with axes here
             pass
         else:
             if threshold_image[coordinate[1], coordinate[0]] > 50:
                 intersection_list[-1].append(coordinate)
                 chain = True
+                continue
+
+            if not(chain):
+                continue
+
+            # If the chain breaks, append a 1 or 0 to the grouping
+            # 1 -> Leads out of the hole
+            # 0 -> Leads inside the hole
+            if grayscale_image[coordinate[1], coordinate[0]] > 127:
+                intersection_list[-1].append(1)
             else:
-                if chain:
-                    intersection_list.append([])
-                chain = False
+                intersection_list[-1].append(0)
+
+            intersection_list.append([])
+            chain = False
 
     # If last grouping is empty, delete it
     if not(intersection_list[-1]):
         del intersection_list[-1]
 
+    print(intersection_list)
+
     intersection_pairs = createIntersectionPairs(intersection_list)
 
     return intersection_pairs
 
-def createAngles(intersection_pairs, grayscale_image):
+def createAngles(intersection_pairs, circle_center_x, circle_center_y):
     # Creates potential angles for the joint
-    # Need to find a way to check if the joint path is outside or inside
-    # the hole
-    angle_pairs = []
+    angles = []
 
     for intersection_pair in intersection_pairs:
-        x_coord_avg = int((intersection_pair[0][0] + intersection_pair[1][0]) / 2)
-        y_coord_avg = int((intersection_pair[0][1] + intersection_pair[1][1]) / 2)
-
-        if grayscale_image[y_coord_avg, x_coord_avg] > 50:
+        # Skip if the intersection pair spans a circle section outside of the hole
+        if intersection_pair[-1] == 1:
             continue
 
-        
+        print(intersection_pair)
+        starting_coord = intersection_pair[0][0]
+        ending_coord = intersection_pair[0][1]
 
-        math.atan2()
+        # thresh[starting_coord[1], starting_coord[0]] = 255
+        # thresh[ending_coord[1], ending_coord[0]] = 255
 
-    return angle_pairs
+        # cv2.imshow('Threshold_2', thresh)
+        # cv2.waitKey(0)
 
+        # Something weird going on here when dealing with intersections -- will deal with later
+        starting_angle = math.atan2(circle_center_y - starting_coord[1], starting_coord[0] - circle_center_x)
+        ending_angle = math.atan2(circle_center_y - ending_coord[1], ending_coord[0] - circle_center_x)
+
+        angles.append((starting_angle + ending_angle) / 2)
+
+    return angles
+
+def calculateJointPosition(angle, link_length):
+    # Calculates the position of a joint given an angle and a link length
+    joint_center_x = int(circle_center_x + (math.cos(angle) * link_length))
+    joint_center_y = int(circle_center_y - (math.sin(angle) * link_length))
+
+    return [joint_center_x, joint_center_y]
 
 test_coordinates = circleBres(circle_center_x, circle_center_y, link1_length_pixels)
-intersections = findIntersections(test_coordinates, thresh)
+intersections = findIntersections(test_coordinates, thresh, img_gray)
+# print(intersections)
+angles = createAngles(intersections, circle_center_x, circle_center_y)
+# print(angles)
+newJointPosition = calculateJointPosition(angles[0], link2_length_pixels)
+print(newJointPosition)
+
+second_coordinates = circleBres(newJointPosition[0], newJointPosition[1], link2_length_pixels)
+intersections = findIntersections(second_coordinates, thresh, img_gray)
 print(intersections)
-angles = createAngles(intersections, img_gray)
+second_angles = createAngles(intersections, newJointPosition[0], newJointPosition[1])
 print(angles)
 
-# # Could change to just averaging the two coordinate points
-# # Could also do similar triangles?
-# starting_angle = math.atan2(starting_coordinate[1] - circle_center_y, circle_center_x - starting_coordinate[0]) * (-1)
-# ending_angle = math.atan2(ending_coordinate[1] - circle_center_y, circle_center_x - ending_coordinate[0]) * (-1)
+# thresh[newJointPosition[1], newJointPosition[0]] = 255
 
-# first_angle_rad = (starting_angle + ending_angle) / 2
-
-# # Calculate position of first joint
-# joint_center_x = circle_center_x - (math.cos(first_angle_rad) * link1_length_pixels)
-# joint_center_y = circle_center_y - (math.sin(first_angle_rad) * link1_length_pixels)
-
-# # print(joint_center_x, joint_center_y)
-# # combined_images[int(joint_center_y), int(joint_center_x)] = 255
+# cv2.imshow('Threshold_2', thresh)
+# cv2.waitKey(0)
 
 cv2.destroyAllWindows()
