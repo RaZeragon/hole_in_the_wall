@@ -6,35 +6,34 @@ import math
 # Update to C++
 
 # Read original image
-img = cv2.imread('testimage2.png')
+# img = cv2.imread('testimage2.png')
 
-# Read image parameters
-height, width, channels = img.shape
+def imagePreProcess(image_path):
+    # Preprocesses the image using following process
+    img = cv2.imread('/home/razeragon/hole_in_the_wall/src/hole_in_the_wall/hitw_algorithm/hitw_algorithm/testimage2.png')
 
-# Convert to grayscale
-img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    cv2.imshow('Original Image', img)
+    cv2.waitKey(0)
 
-# Blur image
-img_blur = cv2.GaussianBlur(img_gray, (3,3), 0)
+    height, width, channels = img.shape
 
-# Canny Edge Detection
-edges = cv2.Canny(image=img_blur, threshold1=100, threshold2=200)
+    # 1. Convert to Grayscale
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-# Threshold the image to standardize pixel values
-ret, thresh = cv2.threshold(edges, 127, 100, cv2.THRESH_BINARY)
+    # 2. Blur image
+    img_blur = cv2.GaussianBlur(img_gray, (3,3), 0)
 
-cv2.imshow('Threshold', thresh)
-cv2.waitKey(0)
+    # 3. Canny edge detection
+    img_edges = cv2.Canny(image=img_blur, threshold1=100, threshold2=200)
 
-# Link length (m)
-# Test ratio: 300 pixels | 1 m
-link1_length_m = 0.5
-link2_length_m = 0.5
-link1_length_pixels = int(link1_length_m * 300)
-link2_length_pixels = int(link2_length_m * 300)
+    # 4. Threshold image to standardize pixel values
+    ret, img_thresh = cv2.threshold(img_edges, 127, 100, cv2.THRESH_BINARY)
 
-circle_center_x = int(width / 2)
-circle_center_y = height - 1
+    cv2.imshow('Threshold', img_thresh)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    return height, width, img_gray, img_thresh
 
 def buildOctants(circle_center_x, circle_center_y, x, y, octants):
     # Use the coordinates from first octant to fill in the rest of the circle
@@ -144,7 +143,7 @@ def findIntersections(circle_coordinates, threshold_image, grayscale_image):
     if not(intersection_list[-1]):
         del intersection_list[-1]
 
-    print(intersection_list)
+    # print(intersection_list)
 
     intersection_pairs = createIntersectionPairs(intersection_list)
 
@@ -159,7 +158,7 @@ def createAngles(intersection_pairs, circle_center_x, circle_center_y):
         if intersection_pair[-1] == 1:
             continue
 
-        print(intersection_pair)
+        # print(intersection_pair)
         starting_coord = intersection_pair[0][0]
         ending_coord = intersection_pair[0][1]
 
@@ -177,26 +176,49 @@ def createAngles(intersection_pairs, circle_center_x, circle_center_y):
 
     return angles
 
-def calculateJointPosition(angle, link_length):
+def calculateJointPosition(circle_center_x, circle_center_y, angle, link_length):
     # Calculates the position of a joint given an angle and a link length
     joint_center_x = int(circle_center_x + (math.cos(angle) * link_length))
     joint_center_y = int(circle_center_y - (math.sin(angle) * link_length))
 
     return [joint_center_x, joint_center_y]
 
-test_coordinates = circleBres(circle_center_x, circle_center_y, link1_length_pixels)
-intersections = findIntersections(test_coordinates, thresh, img_gray)
-# print(intersections)
-angles = createAngles(intersections, circle_center_x, circle_center_y)
-# print(angles)
-newJointPosition = calculateJointPosition(angles[0], link2_length_pixels)
-print(newJointPosition)
+def findRobotAngles(image, link1_length_m, link2_length_m):
 
-second_coordinates = circleBres(newJointPosition[0], newJointPosition[1], link2_length_pixels)
-intersections = findIntersections(second_coordinates, thresh, img_gray)
-print(intersections)
-second_angles = createAngles(intersections, newJointPosition[0], newJointPosition[1])
-print(angles)
+    height, width, img_gray, img_thresh = imagePreProcess(image)
+
+    # Test ratio: 300 pixels | 1 m
+    link1_length_pixels = int(link1_length_m * 300)
+    link2_length_pixels = int(link2_length_m * 300)
+
+    link1_circle_center_x = int(width / 2)
+    link1_circle_center_y = height - 1
+
+    link1_coordinates = circleBres(link1_circle_center_x, link1_circle_center_y, link1_length_pixels)
+    link1_intersections = findIntersections(link1_coordinates, img_thresh, img_gray)
+    link1_angles = createAngles(link1_intersections, link1_circle_center_x, link1_circle_center_y)
+
+    link2_joint_position = calculateJointPosition(link1_circle_center_x, link1_circle_center_y, link1_angles[0], link2_length_pixels)
+    link2_coordinates = circleBres(link2_joint_position[0], link2_joint_position[1], link2_length_pixels)
+    link2_intersections = findIntersections(link2_coordinates, img_thresh, img_gray)
+    link2_angles = createAngles(link2_intersections, link2_joint_position[0], link2_joint_position[1])
+
+    return link1_angles[0], link2_angles[0]
+
+
+# test_coordinates = circleBres(circle_center_x, circle_center_y, link1_length_pixels)
+# intersections = findIntersections(test_coordinates, thresh, img_gray)
+# # print(intersections)
+# angles = createAngles(intersections, circle_center_x, circle_center_y)
+# # print(angles)
+# newJointPosition = calculateJointPosition(angles[0], link2_length_pixels)
+# print(newJointPosition)
+
+# second_coordinates = circleBres(newJointPosition[0], newJointPosition[1], link2_length_pixels)
+# intersections = findIntersections(second_coordinates, thresh, img_gray)
+# print(intersections)
+# second_angles = createAngles(intersections, newJointPosition[0], newJointPosition[1])
+# print(angles)
 
 # thresh[newJointPosition[1], newJointPosition[0]] = 255
 

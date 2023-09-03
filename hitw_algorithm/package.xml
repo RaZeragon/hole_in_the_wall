@@ -7,6 +7,9 @@
   <maintainer email="kward3@stevens.edu">razeragon</maintainer>
   <license>TODO: License declaration</license>
 
+  <depend>opencv-python</depend>
+  <depend>cv_bridge</depend>
+
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>

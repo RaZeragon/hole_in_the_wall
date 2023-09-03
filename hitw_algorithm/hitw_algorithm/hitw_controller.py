@@ -8,9 +8,11 @@ import numpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist 
 from std_msgs.msg import Float64MultiArray, Float32MultiArray
-from sensor_msgs.msg import JointState
+from sensor_msgs.msg import JointState, Image
 from tf2_msgs.msg import TFMessage as tf
 from functools import partial 
+
+from .submodules.image_processing import findRobotAngles
 
 class Controller(Node):
     def __init__(self):
@@ -22,43 +24,23 @@ class Controller(Node):
             1
         )
 
-        self.joint_state_subscriber = self.create_subscription(
-            JointState,
-            '/joint_states',
-            self.joint_states_callback,
+        self.camera_subscriber = self.create_subscription(
+            Image,
+            '/camera/image_raw',
+            self.camera_callback,
             1
         )
 
-    def target_pose_callback(self, msg):
-        target_pose = msg.data
-
-    def joint_states_callback(self, msg):
-        joint_states = msg.position
-
-        joint_states[0] = joint_states[0] + 1
-
-        print(joint_states)
-
-        #self.target_pose_publisher.publish(joint_states)
-
-        self.adjust_joints(joint_states)
-
-    def adjust_joints(self, joint_states):
-        joint_states[0] = joint_states[0] + 1
-        print(type(joint_states[0]))
-
-        msg = JointState()
-        msg.name = ["arm_joint_1", "arm_joint_2"]
-        msg.position = joint_states
-        #msg.velocity = []
-        #msg.effort = []
-
-        self.target_pose_publisher.publish(msg)
+    def camera_callback(self, msg):
+        pass
 
 def main(args=None):
 
     # Initialize rlcpy library
     rclpy.init(args=args)
+
+    angles = findRobotAngles('testimage2.png', 0.5, 0.5)
+    print(angles)
 
     # Create the node
     controller = Controller()
