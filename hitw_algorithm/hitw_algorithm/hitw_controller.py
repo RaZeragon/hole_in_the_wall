@@ -39,12 +39,17 @@ def main(args=None):
     # Initialize rlcpy library
     rclpy.init(args=args)
 
-    angles = findRobotAngles('testimage2.png', 0.5, 0.5)
+    angles = findRobotAngles('Test_Hole.png', 0.5, 0.5)
     print(angles)
 
     # Create the node
     controller = Controller()
     rclpy.spin(controller)
+
+    msg = Float64MultiArray()
+    msg.data = angles
+    controller.joint_publisher.publish[msg]
+
     controller.destroy_node()
 
     rclpy.shutdown()

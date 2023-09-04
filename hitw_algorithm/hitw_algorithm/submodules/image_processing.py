@@ -5,20 +5,17 @@ import math
 # TO DO
 # Update to C++
 
-# Read original image
-# img = cv2.imread('testimage2.png')
-
 def imagePreProcess(image_path):
     # Preprocesses the image using following process
-    img = cv2.imread('/home/razeragon/hole_in_the_wall/src/hole_in_the_wall/hitw_algorithm/hitw_algorithm/testimage2.png')
+    img_original = cv2.imread('/home/razeragon/hole_in_the_wall/src/hole_in_the_wall/hitw_algorithm/images/Test_Hole.png')
 
-    cv2.imshow('Original Image', img)
+    cv2.imshow('Original Image', img_original)
     cv2.waitKey(0)
 
-    height, width, channels = img.shape
+    height, width, channels = img_original.shape
 
     # 1. Convert to Grayscale
-    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img_gray = cv2.cvtColor(img_original, cv2.COLOR_BGR2GRAY)
 
     # 2. Blur image
     img_blur = cv2.GaussianBlur(img_gray, (3,3), 0)
@@ -33,7 +30,7 @@ def imagePreProcess(image_path):
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    return height, width, img_gray, img_thresh
+    return height, width, img_original, img_gray, img_thresh
 
 def buildOctants(circle_center_x, circle_center_y, x, y, octants):
     # Use the coordinates from first octant to fill in the rest of the circle
@@ -183,9 +180,67 @@ def calculateJointPosition(circle_center_x, circle_center_y, angle, link_length)
 
     return [joint_center_x, joint_center_y]
 
+def adjustJoints(joints):
+    # Adjusts the first joint to the correct amount for ROS
+    # Calculations -> +180 to -180 centered on +x axis
+    # ROS          -> +180 to -180 centered on +y axis
+    adjusted_joints = []
+
+    # Calculate the first joint (base)
+    if (joints[0] < 1.5708 and joints[0] >= -1.5708):
+        parent_joint = (np.sign(joints[0]) * -1 * 1.5708) + joints[0]
+        adjusted_joints.append(parent_joint)
+    elif (joints[0] < -1.5708 and joints[0] >= 1.5708):
+        parent_joint = joints[0] - (np.sign(joints[0] * 1.5708))
+        adjusted_joints.append(parent_joint)
+
+    # Calculates second joint if only two joints are present
+    if len(joints) == 2:
+        if ((joints[1] > -1.5708 and joints[1] < joints[0] - 1.5708) or
+            (joints[1] < 1.5708 and joints[1] > 1.5708 + joints[0])):
+            child_joint_angle = 3.1416 - joints[0] + joints[1]
+            adjusted_joints.append(child_joint_angle)
+
+            return adjusted_joints
+
+        child_joint_angle = joints[1] - joints[0]
+        adjusted_joints.append(child_joint_angle)
+
+        return adjusted_joints
+
+
+    # Calculate the positions of joints 2,3,4,...
+    for index in range(1, len(joints) - 1):
+        # Checks for a specific joint orientation
+        if ((joints[index] > -1.5708 and joints[index] < joints[index - 1] - 1.5708) or
+            (joints[index] < 1.5708 and joints[index] > 1.5708 + joints[index - 1])):
+            child_joint_angle = 3.1416 - joints[index - 1] + joints[index]
+            adjusted_joints.append(child_joint_angle)
+            continue
+
+        child_joint_angle = joints[index] - joints[index - 1]
+        adjusted_joints.append(child_joint_angle)
+
+    return adjusted_joints
+
+def showRobotPose(original_image, joint_positions):
+    # Display the positions of the joints and links over the original image
+    joint_color = (0, 255, 0) # green
+    link_color = (255, 0, 0) # blue
+
+    # Color in the links
+    for index in range(1, len(joint_positions)):
+        new_image = cv2.line(original_image, (joint_positions[index - 1][0], joint_positions[index - 1][1]), (joint_positions[index][0], joint_positions[index][1]), link_color, 5)
+
+    # Color in the joints
+    for joint_position in joint_positions:
+        new_image = cv2.circle(original_image, (joint_position[0], joint_position[1]), 5, joint_color, -1)
+
+    return new_image
+
 def findRobotAngles(image, link1_length_m, link2_length_m):
 
-    height, width, img_gray, img_thresh = imagePreProcess(image)
+    height, width, img_original, img_gray, img_thresh = imagePreProcess(image)
 
     # Test ratio: 300 pixels | 1 m
     link1_length_pixels = int(link1_length_m * 300)
@@ -197,32 +252,21 @@ def findRobotAngles(image, link1_length_m, link2_length_m):
     link1_coordinates = circleBres(link1_circle_center_x, link1_circle_center_y, link1_length_pixels)
     link1_intersections = findIntersections(link1_coordinates, img_thresh, img_gray)
     link1_angles = createAngles(link1_intersections, link1_circle_center_x, link1_circle_center_y)
+    link1_end_position = calculateJointPosition(link1_circle_center_x, link1_circle_center_y, link1_angles[0], link1_length_pixels)
 
-    link2_joint_position = calculateJointPosition(link1_circle_center_x, link1_circle_center_y, link1_angles[0], link2_length_pixels)
-    link2_coordinates = circleBres(link2_joint_position[0], link2_joint_position[1], link2_length_pixels)
+    link2_coordinates = circleBres(link1_end_position[0], link1_end_position[1], link2_length_pixels)
     link2_intersections = findIntersections(link2_coordinates, img_thresh, img_gray)
-    link2_angles = createAngles(link2_intersections, link2_joint_position[0], link2_joint_position[1])
+    link2_angles = createAngles(link2_intersections, link1_end_position[0], link1_end_position[1])
+    link2_end_position = calculateJointPosition(link1_end_position[0], link1_end_position[1], link2_angles[0], link2_length_pixels)
 
-    return link1_angles[0], link2_angles[0]
+    joint_angles = [link1_angles[0], link2_angles[0]]
+    adjusted_joints = adjustJoints(joint_angles)
 
+    joint_positions = [[link1_circle_center_x, link1_circle_center_y], link1_end_position, link2_end_position]
+    robot_image = showRobotPose(img_original, joint_positions)
 
-# test_coordinates = circleBres(circle_center_x, circle_center_y, link1_length_pixels)
-# intersections = findIntersections(test_coordinates, thresh, img_gray)
-# # print(intersections)
-# angles = createAngles(intersections, circle_center_x, circle_center_y)
-# # print(angles)
-# newJointPosition = calculateJointPosition(angles[0], link2_length_pixels)
-# print(newJointPosition)
+    cv2.imshow('Robot Pose', robot_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-# second_coordinates = circleBres(newJointPosition[0], newJointPosition[1], link2_length_pixels)
-# intersections = findIntersections(second_coordinates, thresh, img_gray)
-# print(intersections)
-# second_angles = createAngles(intersections, newJointPosition[0], newJointPosition[1])
-# print(angles)
-
-# thresh[newJointPosition[1], newJointPosition[0]] = 255
-
-# cv2.imshow('Threshold_2', thresh)
-# cv2.waitKey(0)
-
-cv2.destroyAllWindows()
+    return adjusted_joints
