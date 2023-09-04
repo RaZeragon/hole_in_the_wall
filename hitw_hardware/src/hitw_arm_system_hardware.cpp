@@ -135,35 +135,35 @@ namespace hitw_hardware
 
     hardware_interface::return_type HITWBotSystemPositionOnlyHardware::read()
     {
-        RCLCPP_INFO(rclcpp::get_logger("HITWBotSystemPositionOnlyHardware"), "Reading...");
+        // RCLCPP_INFO(rclcpp::get_logger("HITWBotSystemPositionOnlyHardware"), "Reading...");
 
         for (uint i = 0; i < hw_states_.size(); i++)
         {
             // Simulate RRBot's movement
             hw_states_[i] = hw_states_[i] + (hw_commands_[i] - hw_states_[i]) / hw_slowdown_;
-            RCLCPP_INFO(rclcpp::get_logger("HITWBotSystemPositionOnlyHardware"), 
-                "Got state %.5f for joint %d!",
-                hw_states_[i], 
-                i);
+            // RCLCPP_INFO(rclcpp::get_logger("HITWBotSystemPositionOnlyHardware"), 
+            //     "Got state %.5f for joint %d!",
+            //     hw_states_[i], 
+            //     i);
         }
-        RCLCPP_INFO(rclcpp::get_logger("HITWBotSystemPositionOnlyHardware"), "Joints successfully read!");
+        // RCLCPP_INFO(rclcpp::get_logger("HITWBotSystemPositionOnlyHardware"), "Joints successfully read!");
 
         return hardware_interface::return_type::OK;
     }
 
     hardware_interface::return_type HITWBotSystemPositionOnlyHardware::write()
     {
-        RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Writing...");
+        // RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Writing...");
 
         for (uint i = 0; i < hw_commands_.size(); i++)
         {
             // Simulate sending commands to the hardware
-            RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), 
-                "Got command %.5f for joint %d!",
-                hw_commands_[i], 
-                i);
+            // RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), 
+            //     "Got command %.5f for joint %d!",
+            //     hw_commands_[i], 
+            //     i);
         }
-        RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully written!");
+        // RCLCPP_INFO(rclcpp::get_logger("RRBotSystemPositionOnlyHardware"), "Joints successfully written!");
 
         return hardware_interface::return_type::OK;
     }

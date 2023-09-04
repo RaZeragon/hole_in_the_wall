@@ -29,8 +29,8 @@ namespace hitw_hardware
             hardware_interface::return_type write() override;
 
         private:
-            double hw_start_sec_;
-            double hw_stop_sec_;
+            //double hw_start_sec_;
+            //double hw_stop_sec_;
             double hw_slowdown_;
 
             std::vector<double> hw_commands_;

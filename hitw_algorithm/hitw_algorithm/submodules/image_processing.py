@@ -26,7 +26,7 @@ def imagePreProcess(image_path):
     # 4. Threshold image to standardize pixel values
     ret, img_thresh = cv2.threshold(img_edges, 127, 100, cv2.THRESH_BINARY)
 
-    cv2.imshow('Threshold', img_thresh)
+    cv2.imshow('Thresholded Edge Detected Image', img_thresh)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 

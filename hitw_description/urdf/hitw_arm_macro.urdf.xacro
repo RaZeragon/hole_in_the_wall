@@ -4,18 +4,14 @@
   <xacro:arg name="prefix" default=""/>
   <xacro:arg name="use_gazebo" default="false"/>
 
-  <!-- Import hitw_arm macro -->
+  <!--****************************FILE INCLUSIONS****************************-->
   <xacro:include filename="hitw_arm.urdf.xacro"/>
-
-  <!-- Import ros2_control paramaters-->
   <xacro:include filename="ros2_control.xacro"/>
-
   <xacro:include filename="transmissions.xacro"/>
-
   <xacro:include filename="materials.xacro"/>
-
   <xacro:include filename="camera.xacro"/>
 
+  <!--****************************BUILD THE ROBOT****************************-->
   <!-- Used for fixing robot -->
   <link name="world"/>
 

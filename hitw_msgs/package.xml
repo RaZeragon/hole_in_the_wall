@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>hitw_hardware</name>
+  <name>hitw_msgs</name>
   <version>0.0.0</version>
-  <description>Package for communicating with hardware.</description>
+  <description>Package for HITW messages.</description>
   <maintainer email="kward2787@gmail.com">razeragon</maintainer>
   <license>Apache License 2.0</license>
 
@@ -11,13 +11,6 @@
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
-
-  <depend>hardware_interface</depend>
-  <depend>pluginlib</depend>
-  <depend>rclcpp</depend>
-
-  <exec_depend>gazebo_ros2_control</exec_depend>
-  <exec_depend>gazebo_ros</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
