@@ -1,0 +1,10 @@
+# Image
+sensor_msgs/Image image
+
+# List of joint lengths (in order)
+float64[] joint_lengths
+
+---
+
+# List of robot joint positions
+float64[] joint_positions
