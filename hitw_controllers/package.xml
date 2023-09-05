@@ -18,9 +18,8 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>controller_manager_msgs</depend>
-  <depend>xarm_description</depend>
-  <depend>xarm_msgs</depend>
-  <depend>xarm_api</depend>
+  <depend>hitw_description</depend>
+  <depend>hitw_msgs</depend>
 
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
