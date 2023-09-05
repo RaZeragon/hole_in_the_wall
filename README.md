@@ -18,6 +18,10 @@ The development and test environment is as follows:
     - Updated README.md
 - (2023-08-30)
     - Functional Gazebo model
+- (2023-09-02)
+    - Functional image processing script for 2DOF robot
+- (2023-09-05)
+    - Functional service / client node for solving and publishing joint commands
 
 ## 3. Installation
 - ### 3.1 Install [ROS2 Foxy](https://docs.ros.org/en/ros2_documentation/foxy/Installation.html) 
@@ -98,6 +102,9 @@ The development and test environment is as follows:
     $ cd ~/dev_ws/
     $ ros2 launch hitw_gazebo arm_gazebo.launch.py
     ```
+
+- ### 4.6 hitw_msgs
+    This package contains custom services and msgs for the hole in the wall robot.
 
 ## 5. References
 - [ros2_control_demos](https://github.com/ros-controls/ros2_control_demos/tree/foxy)
