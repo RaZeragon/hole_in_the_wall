@@ -4,6 +4,7 @@ import cv2
 
 from rclpy.node import Node
 from std_msgs.msg import Float64MultiArray
+from sensor_msgs.msg import Image
 from hitw_msgs.srv import CalculateRobotPose
 
 class robotPoseClient(Node):
@@ -16,18 +17,29 @@ class robotPoseClient(Node):
             1
         )
 
+        self.camera_subscriber = self.create_subscription(
+            Image,
+            '/rgb_cam/image_raw',
+            self.camera_callback,
+            1
+        )
+
         self.calculateRobotPose_cli = self.create_client(
             CalculateRobotPose, 
             'calculate_robot_pose'
         )
 
+        self.ros2_image = Image()
+
         while not self.calculateRobotPose_cli.wait_for_service(timeout_sec = 1.0):
             self.get_logger().info('CalculateRobotPose service not availble, waiting again...')
         self.calculateRobotPose_req = CalculateRobotPose.Request()
-        self.img_original = cv2.imread('/home/razeragon/hole_in_the_wall/src/hole_in_the_wall/hitw_algorithm/images/Test_Hole.png')
+
+    def camera_callback(self, msg):
+        self.ros2_image = msg
 
     def send_request(self):
-        # self.calculateRobotPose_req.image = self.img_original
+        self.calculateRobotPose_req.image = self.ros2_image
         self.calculateRobotPose_req.link1_length = 0.5
         self.calculateRobotPose_req.link2_length = 0.5
 

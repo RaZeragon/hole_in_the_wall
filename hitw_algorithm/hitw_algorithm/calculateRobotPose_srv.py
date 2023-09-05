@@ -2,7 +2,8 @@ import rclpy
 import cv2
 
 from rclpy.node import Node
-
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 from hitw_msgs.srv import CalculateRobotPose
 from .submodules.image_processing import findRobotAngles
 
@@ -17,9 +18,12 @@ class robotPoseService(Node):
         )
 
     def calculate_robot_pose_callback(self, request, response):
-        img_original = cv2.imread('/home/razeragon/hole_in_the_wall/src/hole_in_the_wall/hitw_algorithm/images/Test_Hole.png')
+        # img_original = cv2.imread('/home/razeragon/hole_in_the_wall/src/hole_in_the_wall/hitw_algorithm/images/Test_Hole.png')
 
-        angles = findRobotAngles(img_original, request.link1_length, request.link2_length)
+        bridge = CvBridge()
+        cv_image = bridge.imgmsg_to_cv2(request.image, 'bgr8')
+
+        angles = findRobotAngles(cv_image, request.link1_length, request.link2_length)
         response.joint_positions = angles
 
         print(request.link1_length, request.link2_length)

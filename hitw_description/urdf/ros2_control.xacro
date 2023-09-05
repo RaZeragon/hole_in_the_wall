@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <!--Determines which plugins to use based on if running Gazebo or RViz-->
   <xacro:macro name="hitw_arm_ros2_control" params="prefix use_gazebo">
 
     <xacro:if value="${not use_gazebo}">

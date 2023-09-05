@@ -1,5 +1,5 @@
 # Image
-# sensor_msgs/Image image
+sensor_msgs/Image image
 
 # Joint Lengths
 float64 link1_length

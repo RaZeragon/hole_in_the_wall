@@ -5,9 +5,9 @@ import math
 # TO DO
 # Update to C++
 
-def imagePreProcess(image_path):
+def imagePreProcess(img_original):
     # Preprocesses the image using following process
-    img_original = cv2.imread('/home/razeragon/hole_in_the_wall/src/hole_in_the_wall/hitw_algorithm/images/Test_Hole.png')
+    # img_original = cv2.imread('/home/razeragon/hole_in_the_wall/src/hole_in_the_wall/hitw_algorithm/images/Test_Hole.png')
 
     cv2.imshow('Original Image', img_original)
     cv2.waitKey(0)
