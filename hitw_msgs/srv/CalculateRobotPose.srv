@@ -1,8 +1,9 @@
 # Image
-sensor_msgs/Image image
+# sensor_msgs/Image image
 
-# List of joint lengths (in order)
-float64[] joint_lengths
+# Joint Lengths
+float64 link1_length
+float64 link2_length
 
 ---
 

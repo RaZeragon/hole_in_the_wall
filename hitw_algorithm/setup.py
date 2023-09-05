@@ -25,6 +25,8 @@ setup(
     entry_points={
         'console_scripts': [
             'hitw_controller = hitw_algorithm.hitw_controller:main',
+            'robotpose_service = hitw_algorithm.calculateRobotPose_srv:main',
+            'robotpose_client = hitw_algorithm.calculateRobotPose_cli:main',
         ],
     },
 )
