@@ -11,19 +11,32 @@ class robotPoseService(Node):
     def __init__(self):
         super().__init__('robotpose_service')
 
+        self.bridge = CvBridge()
+        self.cv_image = None
+        
+        self.camera_subscriber = self.create_subscription(
+            Image,
+            '/rgb_cam/image_raw',
+            self.camera_callback,
+            1
+        )
+
         self.calculateRobotPose_srv = self.create_service(
             CalculateRobotPose, 
             'calculate_robot_pose', 
             self.calculate_robot_pose_callback
         )
 
-    def calculate_robot_pose_callback(self, request, response):
-        # img_original = cv2.imread('/home/razeragon/hole_in_the_wall/src/hole_in_the_wall/hitw_algorithm/images/Test_Hole.png')
-
+    def camera_callback(self, msg):
         bridge = CvBridge()
-        cv_image = bridge.imgmsg_to_cv2(request.image, 'bgr8')
+        self.cv_image = bridge.imgmsg_to_cv2(msg, 'bgr8')
+        pass
 
-        angles = findRobotAngles(cv_image, request.link1_length, request.link2_length)
+    def calculate_robot_pose_callback(self, request, response):
+        # For testing purposes
+        # self.cv_image = cv2.imread('/home/razeragon/hole_in_the_wall/src/hole_in_the_wall/hitw_algorithm/images/Test_Hole.png')
+
+        angles = findRobotAngles(self.cv_image, request.link1_length, request.link2_length)
         response.joint_positions = angles
 
         print(request.link1_length, request.link2_length)

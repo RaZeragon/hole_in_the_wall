@@ -17,29 +17,17 @@ class robotPoseClient(Node):
             1
         )
 
-        self.camera_subscriber = self.create_subscription(
-            Image,
-            '/rgb_cam/image_raw',
-            self.camera_callback,
-            1
-        )
-
         self.calculateRobotPose_cli = self.create_client(
             CalculateRobotPose, 
             'calculate_robot_pose'
         )
 
-        self.ros2_image = Image()
-
         while not self.calculateRobotPose_cli.wait_for_service(timeout_sec = 1.0):
             self.get_logger().info('CalculateRobotPose service not availble, waiting again...')
         self.calculateRobotPose_req = CalculateRobotPose.Request()
 
-    def camera_callback(self, msg):
-        self.ros2_image = msg
-
     def send_request(self):
-        self.calculateRobotPose_req.image = self.ros2_image
+        # self.calculateRobotPose_req.image = self.ros2_image
         self.calculateRobotPose_req.link1_length = 0.5
         self.calculateRobotPose_req.link2_length = 0.5
 
@@ -52,6 +40,7 @@ def main(args=None):
 
     robotpose_client = robotPoseClient()
     response = robotpose_client.send_request()
+    print(response.joint_positions)
     robotpose_client.get_logger().info(
         'Result of CalculateRobotPose: Link 1 Angle: {angle1} Link 2 Angle: {angle2}'.format(angle1=response.joint_positions[0], angle2=response.joint_positions[1])
     )

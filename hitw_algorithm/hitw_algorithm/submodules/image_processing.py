@@ -3,7 +3,17 @@ import numpy as np
 import math
 
 # TO DO
-# Update to C++
+# Sooner
+# 1. Update to C++
+# 2. Add checking for intersections between joint circle and edges of image
+# 3. Add rotation limits while checking for intersections
+# 4. Add function to iteratively calculate the joint position
+# 5. Add way to iteratively check different joint angles if the initial one doesn't work
+# 6. Add variable meter:pixel ratio depending on distance of camera to wall (would require more stuff than just adjusting this file)
+#
+# Later
+# 1. Allow for joints rotating in other planes
+# 2. Try and use ML?
 
 def imagePreProcess(img_original):
     # Preprocesses the image using following process
@@ -194,6 +204,10 @@ def adjustJoints(joints):
         parent_joint = joints[0] - (np.sign(joints[0] * 1.5708))
         adjusted_joints.append(parent_joint)
 
+    # Exits if only 1 joint present
+    if len(joints) == 1:
+        return adjusted_joints
+
     # Calculates second joint if only two joints are present
     if len(joints) == 2:
         if ((joints[1] > -1.5708 and joints[1] < joints[0] - 1.5708) or
@@ -207,7 +221,6 @@ def adjustJoints(joints):
         adjusted_joints.append(child_joint_angle)
 
         return adjusted_joints
-
 
     # Calculate the positions of joints 2,3,4,...
     for index in range(1, len(joints) - 1):
@@ -246,13 +259,12 @@ def findRobotAngles(image, link1_length_m, link2_length_m):
     link1_length_pixels = int(link1_length_m * 300)
     link2_length_pixels = int(link2_length_m * 300)
 
-    link1_circle_center_x = int(width / 2)
-    link1_circle_center_y = height - 1
+    link0_end_position = [int(width / 2), height - 1]
 
-    link1_coordinates = circleBres(link1_circle_center_x, link1_circle_center_y, link1_length_pixels)
+    link1_coordinates = circleBres(link0_end_position[0], link0_end_position[1], link1_length_pixels)
     link1_intersections = findIntersections(link1_coordinates, img_thresh, img_gray)
-    link1_angles = createAngles(link1_intersections, link1_circle_center_x, link1_circle_center_y)
-    link1_end_position = calculateJointPosition(link1_circle_center_x, link1_circle_center_y, link1_angles[0], link1_length_pixels)
+    link1_angles = createAngles(link1_intersections, link0_end_position[0], link0_end_position[1])
+    link1_end_position = calculateJointPosition(link0_end_position[0], link0_end_position[1], link1_angles[0], link1_length_pixels)
 
     link2_coordinates = circleBres(link1_end_position[0], link1_end_position[1], link2_length_pixels)
     link2_intersections = findIntersections(link2_coordinates, img_thresh, img_gray)
@@ -262,11 +274,14 @@ def findRobotAngles(image, link1_length_m, link2_length_m):
     joint_angles = [link1_angles[0], link2_angles[0]]
     adjusted_joints = adjustJoints(joint_angles)
 
-    joint_positions = [[link1_circle_center_x, link1_circle_center_y], link1_end_position, link2_end_position]
+    # Mirrors joint positions for the robot
+    flipped_joints = [-joint for joint in adjusted_joints]
+
+    joint_positions = [link0_end_position, link1_end_position, link2_end_position]
     robot_image = showRobotPose(img_original, joint_positions)
 
     cv2.imshow('Robot Pose', robot_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    return adjusted_joints
+    return flipped_joints
