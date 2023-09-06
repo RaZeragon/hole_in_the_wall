@@ -18,7 +18,7 @@ The development and test environment is as follows:
 - (2023-08-30): Functional Gazebo model
 - (2023-09-02): Functional image processing script for 2DOF robot
 - (2023-09-05): Functional service / client node for solving and publishing joint commands
-- (2023-09-06): Alpha version complete!
+- (2023-09-06): Alpha version complete! [Watch video demonstration here](https://youtu.be/OODFsPO2H0o).
 
 ## 3. Installation
 - ### 3.1 Install [ROS2 Foxy](https://docs.ros.org/en/ros2_documentation/foxy/Installation.html) 
@@ -145,7 +145,7 @@ The development and test environment is as follows:
     $ ros2 run hitw_algorithm robotpose_client.
     ```
 
-    After a few seconds, an image showing the camera feed should show up. Hit spacebar to move to the next image which will showcase the edge-detected and thresholded image. Hit spacebar again to move to the final image which will showcase the original image with the calculated robot pose shown. Hit spacebar again and the robot should now move into the indicated position.
+    After a few seconds, an image showing the camera feed should show up. Hit spacebar to move to the next image which will showcase the edge-detected and thresholded image. Hit spacebar again to move to the final image which will showcase the original image with the calculated robot pose shown. Hit spacebar again and the robot should now move into the indicated position. Example video can be found [here](https://youtu.be/OODFsPO2H0o).
 
 ## 6. To Do
 - Increase DoF (up to 7)
