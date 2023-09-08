@@ -10,6 +10,7 @@ import math
 # 4. Add function to iteratively calculate the joint position
 # 5. Add way to iteratively check different joint angles if the initial one doesn't work
 # 6. Add variable meter:pixel ratio depending on distance of camera to wall (would require more stuff than just adjusting this file)
+# 7. Test
 #
 # Later
 # 1. Allow for joints rotating in other planes
